@@ -1,0 +1,15 @@
+menu "App Configuration"
+
+    config USER_LED
+        int "Led Pin"
+        default 2
+        help
+            On board led pin.
+
+    config USER_BUTTON
+        int "Button Pin"
+        default 0
+        help
+            On board user button pin.
+
+endmenu
