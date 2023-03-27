@@ -38,7 +38,7 @@ public:
 
     bool check_err(esp_err_t err, const char* op){
         if (err != ESP_OK){
-            ESP_LOGE(TAG, "Error in i2c write %s: %d %4.4X", op, err, err);
+            ESP_LOGE(TAG, "Error in i2c %s: %d %4.4X", op, err, err);
         }
         return err == ESP_OK;
     }
@@ -57,15 +57,19 @@ public:
         if (!check_err(err, "master cmd begin")) return;
     }
 
-    void read_bytes(uint8_t* buf, size_t len, const uint8_t* write, size_t write_len){
+    void read_bytes(uint8_t* buf, size_t len, const uint8_t* write=nullptr, size_t write_len=0){
         unique_cmd_t cmd(i2c_cmd_link_create(), i2c_cmd_link_delete);
         esp_err_t err = i2c_master_start(cmd.get());
         if (!check_err(err, "master start")) return;
-        err = i2c_master_write_byte(cmd.get(), client, true);
-        if (!check_err(err, "master write addr")) return;
-        if (write){
+        if (write_len){
+            err = i2c_master_write_byte(cmd.get(), client, true);
+            if (!check_err(err, "master write addr")) return;
             err = i2c_master_write(cmd.get(), write, write_len, true);
             if (!check_err(err, "master write")) return;
+            err = i2c_master_stop(cmd.get());
+            if (!check_err(err, "master stop")) return;
+            err = i2c_master_start(cmd.get());
+            if (!check_err(err, "master start")) return;
         }
         err = i2c_master_write_byte(cmd.get(), client | I2C_MASTER_READ, true);
         if (!check_err(err, "master read addr")) return;

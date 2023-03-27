@@ -5,6 +5,9 @@
 
 #include <string>
 #include <vector>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+
 
 #define TAG (name.c_str())
 

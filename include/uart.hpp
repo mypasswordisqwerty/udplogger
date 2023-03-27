@@ -2,6 +2,7 @@
 
 #include "common.h"
 #include "config.hpp"
+#include "udp.hpp"
 #include <driver/uart.h>
 #include <string>
 #include <sstream>
@@ -48,18 +49,19 @@ public:
 
 private:
     void normal_run(){
-        char buf [511];
-        //int cnt = 0;
+        char buf [500];
         while(true){
-            int rxBytes = uart_read_bytes(port, buf, 510, 50 / portTICK_RATE_MS);
+            int rxBytes = uart_read_bytes(port, buf, 500, 50 / portTICK_RATE_MS);
             if (rxBytes < 0){
                 ESP_LOGE(TAG, "UART read error: %d", rxBytes);
             }
             if (rxBytes > 0) {
-                //gpio_set_level(GPIO_NUM_2, cnt++ % 2);
+                ESP_LOGD(TAG, "UART %d read %d bytes: '%s'", port, rxBytes, buf);
                 buf[rxBytes] = 0;
-                //ESP_LOGD(TAG, "UART read %d bytes: '%s'", rxBytes, buf);
-                //udp_send_bytes(buf, rxBytes);
+                std::string msg(buf);
+                UDP::send(std::to_string(port)+": "+msg);
+                // some indication
+                config.led().toggle();
             }
         }
     }

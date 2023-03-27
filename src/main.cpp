@@ -1,13 +1,15 @@
 #include <esp_system.h>
-#include "udp.h"
 #include "led.hpp"
 #include "config.hpp"
 #include "button.hpp"
 #include "uart.hpp"
 #include "screen.hpp"
 #include "ina.hpp"
+#include "udp.hpp"
+#include "wifi.hpp"
 
 QueueHandle_t Screen::queue = nullptr;
+Messages UDP::msg;
 
 void loop_forever(){
     while(true){
@@ -31,13 +33,15 @@ void start_normal_mode(Config& config, Screen& screen){
     screen.add_label(84,0,42,0, "-.--V");
     screen.add_label(84,16,42,0, "-.--mV");
     screen.start(4096, 1);
+    UDP udp(config);
     Uart uart1(config, 0);
     Uart uart2(config, 2);
     INA ina(config);
+    udp.start(4096, configMAX_PRIORITIES-2);
     uart1.start(4096, configMAX_PRIORITIES-1);
     uart2.start(4096, configMAX_PRIORITIES-1);
-    ina.start(4096, configMAX_PRIORITIES-2);
-    //WiFi wifi(config, )
+    ina.start(4096, configMAX_PRIORITIES-3);
+    WiFi wifi(config, udp);
     loop_forever();
 }
 
