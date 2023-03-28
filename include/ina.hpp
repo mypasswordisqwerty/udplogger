@@ -86,6 +86,8 @@ private:
             shunt_ma[i] /= count;
             bus_v[i] /= count;
             ss << " " << std::fixed << std::setprecision(6) << bus_v[i] << " " << shunt_ma[i];
+            shunt_ma[i] = .0;
+            bus_v[i] = .0;
         }
         ESP_LOGI(TAG, "%s", ss.str().c_str());
         UDP::send(ss.str() + "\n");

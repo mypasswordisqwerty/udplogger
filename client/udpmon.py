@@ -25,7 +25,7 @@ def broadcastPing(opts):
         raise Exception("Networks for broadcasts not found")
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    sock.settimeout(3.0)
+    sock.settimeout(1.0)
     for x in hosts:
         logger.debug(f"Send ping broadcast to {x}:{opts.port}")
         try:
