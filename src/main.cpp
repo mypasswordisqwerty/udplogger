@@ -25,23 +25,24 @@ void start_config_mode(Config& config){
 
 
 void start_normal_mode(Config& config, Screen& screen){
-    //screen.add_label(0, 8, 128, 0, "Normal mode");
     screen.add_label(0,0,42,0, "-.--V");
-    screen.add_label(0,16,42,0, "-.--mV");
+    screen.add_label(0,12,42,0, "-.--mA");
     screen.add_label(42,0,42,0, "-.--V");
-    screen.add_label(42,16,42,0, "-.--mV");
+    screen.add_label(42,12,42,0, "-.--mA");
     screen.add_label(84,0,42,0, "-.--V");
-    screen.add_label(84,16,42,0, "-.--mV");
-    screen.start(4096, 1);
+    screen.add_label(84,12,42,0, "-.--mA");
+    screen.add_label(0,24,128,0, "---.---.---.---");
+    screen.start(4096*2, 1);
     UDP udp(config);
-    Uart uart1(config, 0);
+    Uart uart1(config, 1);
     Uart uart2(config, 2);
     INA ina(config);
-    udp.start(4096, configMAX_PRIORITIES-2);
+    udp.start(4096*10, configMAX_PRIORITIES-2);
     uart1.start(4096, configMAX_PRIORITIES-1);
     uart2.start(4096, configMAX_PRIORITIES-1);
-    ina.start(4096, configMAX_PRIORITIES-3);
+    ina.start(4096*2, configMAX_PRIORITIES-3);
     WiFi wifi(config, udp);
+    wifi.start(4096, 1);
     loop_forever();
 }
 
@@ -52,8 +53,6 @@ extern "C" void app_main() {
     Config config(led);
     Button btn(static_cast<gpio_num_t>(CONFIG_USER_BUTTON));
     Screen screen(config);
-    //screen.add_label(0, 18, 128, 1, "Config mode");
-    //screen.add_label(0, 32, 128, 2, "Config mode");
     if (!config.ready() || btn.is_long_pressed()){
         screen.add_label(0, 8, 128, 0, "Config mode");
         start_config_mode(config);

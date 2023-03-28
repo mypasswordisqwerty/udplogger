@@ -44,7 +44,7 @@ public:
             ESP_ERROR_CHECK(uart_param_config(port, &uart_config));
             ESP_ERROR_CHECK(uart_set_pin(port, config.get_uart_io(port), UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
         }
-        ESP_LOGI(TAG, "uart %d enabled in mode %d", port, mode);
+        ESP_LOGI(TAG, "uart%d enabled in mode %d", port, mode);
     }
 
 private:
@@ -155,7 +155,6 @@ private:
             }
         }
     }
-
 
     virtual void run() override {
         if (mode == MODE_CONFIG){

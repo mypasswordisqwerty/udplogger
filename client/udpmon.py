@@ -25,7 +25,7 @@ def broadcastPing(opts):
         raise Exception("Networks for broadcasts not found")
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    sock.settimeout(1.0)
+    sock.settimeout(3.0)
     for x in hosts:
         logger.debug(f"Send ping broadcast to {x}:{opts.port}")
         try:
@@ -50,13 +50,22 @@ def run(opts, args):
     logger.info(f"Found logger server at {host}")
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.sendto(b"UUL START", (host, opts.port))
+    mlen = 0
     while True:
         try:
             data, server = sock.recvfrom(512)
             if data.startswith(b"UUL"):
                 logger.debug(f"Got response from {server}: {data}")
             else:
-                print(data.decode("utf-8", errors='ignore'), end="")
+                str = data.decode("utf-8", errors='ignore').strip()
+                if (str.startswith("INA:")):
+                    if (len(str) > mlen):
+                        mlen = len(str)
+                    print(str, end='\r')
+                else:
+                    if (len(str) < mlen):
+                        str += ' ' * (mlen - str(len))
+                    print(str)
         except socket.timeout:
             logger.debug("Timeout")
 

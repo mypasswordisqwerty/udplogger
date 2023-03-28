@@ -4,10 +4,12 @@
 #include "common.h"
 #include "config.hpp"
 #include "messages.hpp"
+#include "screen.hpp"
 #include <lwip/err.h>
 #include <lwip/sockets.h>
 #include <lwip/sys.h>
 #include <lwip/netdb.h>
+#include <esp_wifi.h>
 #include <sstream>
 
 class UDP: public Thread{
@@ -23,13 +25,13 @@ public:
                 ESP_LOGI(TAG, "Net not ready");
                 close_udp();
                 msg.clear();
-                vTaskDelay(1000);
+                delay(1000);
                 continue;
             }
             if (_socket < 0 && !createSocket()){
                 ESP_LOGI(TAG, "No socket");
                 msg.clear();
-                vTaskDelay(100);
+                delay(100);
                 continue;
             }
             processUDPCommands();
@@ -37,16 +39,19 @@ public:
                 if (!remote_addr) continue;
                 sendUdp(message, remote_addr);
             }
+            delay(1);
         }
     }
 
     void net_start(esp_ip4_addr_t address){
         addr = address;
         netready = true;
+        Screen::update_label(6, ip_addr_str(&addr));
     }
 
     void net_end(){
         netready = false;
+        Screen::update_label(6, "---.---.---.---");
     }
 
     static void send(const std::string& message){
@@ -137,7 +142,7 @@ private:
         std::getline(ss, s, ' ');
         std::getline(ss, cmd, ' ');
         ESP_LOGI(TAG, "Command is %s", cmd.c_str());
-        vTaskDelay(100);
+        delay(100);
         if (cmd == "PING"){
             sendUdp("UUL PONG", &source_addr);
         }else if (cmd == "STOP"){
@@ -155,6 +160,13 @@ private:
         }else{
             sendUdp("UUL ERR UNSUPPORTED COMMAND", &source_addr);
         }
+    }
+
+    std::string ip_addr_str(esp_ip4_addr_t *a){
+        return std::to_string(esp_ip4_addr1(a)) + "." 
+            + std::to_string(esp_ip4_addr2(a)) + "."
+            + std::to_string(esp_ip4_addr3(a)) + "."
+            + std::to_string(esp_ip4_addr4(a));
     }
 
 private:

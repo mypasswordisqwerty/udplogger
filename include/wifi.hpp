@@ -6,13 +6,17 @@
 #include <esp_wifi.h>
 #include <freertos/event_groups.h>
 
-class WiFi: public Base{
+class WiFi: public Thread{
 
 public:
-    WiFi(Config& config, UDP& udp): Base("WiFi"), udp(udp){
-        ESP_LOGI(TAG, "Init wifi");
+    WiFi(Config& config, UDP& udp): Thread("WiFi"), config(config), udp(udp){
         s_wifi_event_group = xEventGroupCreate();
-        init(config);
+    }
+
+    void run(){
+        ESP_LOGI(TAG, "init  wifi");
+        init_wifi(config);
+        ESP_LOGI(TAG, "after init wifi");
 
         /* Waiting until either the connection is established (WIFI_CONNECTED_BIT) or connection failed for the maximum
         * number of re-tries (WIFI_FAIL_BIT). The bits are set by event_handler() (see above) */
@@ -31,9 +35,13 @@ public:
         } else {
             ESP_LOGE(TAG, "UNEXPECTED EVENT");
         }
+        while(true){
+            vTaskDelay(portMAX_DELAY);
+        }
     }
 
-    void init(Config& config)
+private:
+    void init_wifi(Config& config)
     {
         s_wifi_event_group = xEventGroupCreate();
 
@@ -59,6 +67,7 @@ public:
                                                             &instance_got_ip));
 
         wifi_config_t wifi_config;
+        memset(&wifi_config, 0, sizeof(wifi_config_t));
         std::string& ssid = config.ssid();
         memcpy(wifi_config.sta.ssid, ssid.c_str(), ssid.length()+1); 
         std::string& pswd = config.pswd();
@@ -68,7 +77,7 @@ public:
         ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config) );
         ESP_ERROR_CHECK(esp_wifi_start() );
 
-        ESP_LOGD(TAG, "wifi_init_sta finished.");
+        ESP_LOGI(TAG, "wifi_init_sta finished.");
     }
 
     void on_event(esp_event_base_t event_base, int32_t event_id, void* event_data){
@@ -76,10 +85,10 @@ public:
             esp_wifi_connect();
         } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
             udp.net_end();
-            if (s_retry_num < 5) {
+            if (s_retry_num < 100) {
                 esp_wifi_connect();
                 s_retry_num++;
-                ESP_LOGD(TAG, "retry to connect to the AP");
+                ESP_LOGI(TAG, "retry to connect to the AP");
             } else {
                 xEventGroupSetBits(s_wifi_event_group, BIT1);
             }
@@ -100,6 +109,7 @@ public:
     }
 
 private:
+    Config& config;
     UDP& udp;
     int s_retry_num = 0;
     EventGroupHandle_t s_wifi_event_group;

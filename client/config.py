@@ -54,7 +54,7 @@ class Config:
         }
 
     def print(self):
-        return json.dumps(self.cfg, indent=4)
+        print(json.dumps(self.cfg, indent=4))
 
     def dump(self):
         c = self.cfg
@@ -75,7 +75,7 @@ def run_command(dev, opts):
     if opts.command == "read":
         cfg = Config()
         cfg.parse(dev.cmd("getconfig"))
-        print(cfg.print())
+        cfg.print()
         return
     if opts.command == "write":
         if not opts.config:
@@ -100,7 +100,6 @@ def main():
     dev = Device(opts.device)
     run_command(dev, opts)
     
-
 
 if __name__ == "__main__":
     main()

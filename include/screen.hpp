@@ -22,14 +22,14 @@ public:
             ESP_LOGE(TAG, "Screen init failed");
             return;
         }
-        vTaskDelay(100);
+        delay(100);
+        if (!queue){
+            queue = xQueueCreate(10, sizeof(ScreenUpdate));
+        }
         buf = &buf_data[1];
         buf_data[0] = 0x40;
         inited = true;
         init_cmds();
-        if (!queue){
-            queue = xQueueCreate(10, sizeof(ScreenUpdate));
-        }
         ESP_LOGI(TAG, "Screen inited");
     }
 
@@ -62,24 +62,24 @@ public:
         ScreenUpdate upd;
         upd.id = id;
         memcpy(upd.text, text.c_str(), 20);
-        xQueueSend(queue, &upd, 100);
+        if (!xQueueSend(queue, &upd, 10)){
+            ESP_LOGE("Screen", "Queue full");
+        }
     }
 
     void run(){
         while(true){
             ScreenUpdate upd;
             std::map<int, std::string> texts;
-            while(xQueueReceive(queue, &upd, 10)){
+            while(xQueueReceive(queue, &upd, 1) == pdTRUE && texts.size() < 10){
                 texts[upd.id] = std::string(upd.text);
             }
-            if (texts.size()>0){
+            if (texts.size() > 0){
                 update_labels(texts);
             }
-            vTaskDelay(100);
+            delay(100);
         }
     }
-
-
 
 private:
 

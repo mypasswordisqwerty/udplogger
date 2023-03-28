@@ -27,7 +27,7 @@ public:
         int i=0;
         while(true){
             _led.toggle();
-            vTaskDelay(100 / portTICK_RATE_MS);
+            delay(100);
             if (i++ % 10 == 0){
                 ESP_LOGE(TAG, "NVS error (%d): %s", err, msg);
             }

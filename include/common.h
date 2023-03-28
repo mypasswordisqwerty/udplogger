@@ -17,6 +17,10 @@ class Base{
 public:
     Base(std::string name): name(name){}
 protected:
+    inline void delay(TickType_t ms){
+        vTaskDelay(ms / portTICK_RATE_MS);
+    }
+protected:
     std::string name;
 };
 
@@ -31,10 +35,6 @@ public:
 
 protected:
     virtual void run() = 0;
-
-    inline void delay(TickType_t ms){
-        vTaskDelay(ms / portTICK_RATE_MS);
-    }
 
 private:
     static void _run(void* thiz){

@@ -33,7 +33,7 @@ public:
                 send();
                 count = 0;
             }
-            vTaskDelay(100);
+            delay(100);
         }
     }
 
@@ -88,7 +88,7 @@ private:
             ss << " " << std::fixed << std::setprecision(6) << bus_v[i] << " " << shunt_ma[i];
         }
         ESP_LOGI(TAG, "%s", ss.str().c_str());
-        UDP::send(ss.str());
+        UDP::send(ss.str() + "\n");
     }
 
 private:

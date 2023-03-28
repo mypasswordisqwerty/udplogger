@@ -29,8 +29,7 @@ public:
     bool is_long_pressed(){
         for (int i=0; i<4; i++){
             if (level()) return false;
-            ESP_LOGI(TAG, "Btn down");
-            vTaskDelay(1000 / portTICK_RATE_MS);
+            delay(1000);
         }
         return true;
     }
