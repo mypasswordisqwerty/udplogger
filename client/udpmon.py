@@ -11,8 +11,9 @@ logger = logging.getLogger()
 
 def getNetsBroadcast():
     ret = []
-    for x,y in psutil.net_if_addrs().items():
-        ips = [z.broadcast for z in y if z.family == socket.AF_INET and z.broadcast]
+    for x, y in psutil.net_if_addrs().items():
+        ips = [z.broadcast for z in y if z.family ==
+               socket.AF_INET and z.broadcast]
         if ips:
             ret += ips
     logger.debug(f"Found broadcasts {ret}")
@@ -43,7 +44,8 @@ def broadcastPing(opts):
 
 def run(opts, args):
     level = logging.INFO if opts.verbose < 1 else logging.DEBUG
-    logging.basicConfig(level=level, format='%(asctime)s.%(msecs)03d %(levelname)s %(message)s', stream=sys.stderr)
+    logging.basicConfig(
+        level=level, format='%(asctime)s.%(msecs)03d %(levelname)s %(message)s', stream=sys.stderr)
     host = None
     while not host:
         host = broadcastPing(opts)
@@ -51,6 +53,7 @@ def run(opts, args):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.sendto(b"UUL START", (host, opts.port))
     mlen = 0
+    inastr = ""
     while True:
         try:
             data, server = sock.recvfrom(512)
@@ -59,13 +62,15 @@ def run(opts, args):
             else:
                 str = data.decode("utf-8", errors='ignore').strip()
                 if (str.startswith("INA:")):
+                    inastr = str
                     if (len(str) > mlen):
                         mlen = len(str)
                     print(str, end='\r')
                 else:
                     if (len(str) < mlen):
-                        str += ' ' * (mlen - str(len))
+                        str += ' ' * (mlen - len(str))
                     print(str)
+                    print(inastr, end='\r')
         except socket.timeout:
             logger.debug("Timeout")
 
